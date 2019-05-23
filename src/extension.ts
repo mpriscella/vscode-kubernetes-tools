@@ -1797,7 +1797,7 @@ async function createClusterKubernetes() {
 
 const ADD_NEW_KUBECONFIG_PICK = "+ Add new kubeconfig";
 
-async function useKubeconfigKubernetes(kubeconfig?: string): Promise<void> {
+async function useKubeconfigKubernetes(kubeconfig?: config.KubeconfigObject): Promise<void> {
     const kc = await getKubeconfigSelection(kubeconfig);
     if (!kc) {
         return;
@@ -1806,12 +1806,18 @@ async function useKubeconfigKubernetes(kubeconfig?: string): Promise<void> {
     telemetry.invalidateClusterType(undefined, kubectl);
 }
 
-async function getKubeconfigSelection(kubeconfig?: string): Promise<string | undefined> {
+async function getKubeconfigSelection(kubeconfig?: config.KubeconfigObject): Promise<config.KubeconfigObject | undefined> {
     if (kubeconfig) {
         return kubeconfig;
     }
     const knownKubeconfigs = getKnownKubeconfigs();
-    const picks = [ ADD_NEW_KUBECONFIG_PICK, ...knownKubeconfigs ];
+    const knownKubeconfigNames = knownKubeconfigs.map((kkc) => {
+        if (!kkc.name || !kkc.name.length) {
+            return kkc.path;
+        }
+        return kkc.name;
+    });
+    const picks = [ ADD_NEW_KUBECONFIG_PICK, ...knownKubeconfigNames ];
     const pick = await vscode.window.showQuickPick(picks);
 
     if (pick === ADD_NEW_KUBECONFIG_PICK) {
@@ -1819,12 +1825,22 @@ async function getKubeconfigSelection(kubeconfig?: string): Promise<string | und
         if (kubeconfigUris && kubeconfigUris.length === 1) {
             const kubeconfigPath = kubeconfigUris[0].fsPath;
             await addKnownKubeconfig(kubeconfigPath);
-            return kubeconfigPath;
+            return { "path": kubeconfigPath };
         }
         return undefined;
     }
 
-    return pick;
+    return knownKubeconfigs.find((kc) => {
+        if (!kc.name || !kc.name.length) {
+            return true;
+        }
+        else if (!kc.path || !kc.path.length) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    });
 }
 
 async function useContextKubernetes(explorerNode: explorer.KubernetesObject) {

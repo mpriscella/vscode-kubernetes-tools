@@ -12,8 +12,13 @@ export enum KubectlVersioning {
     Infer = 2,
 }
 
+export interface KubeconfigObject {
+    name?: string,
+    path: string
+}
+
 export async function addPathToConfig(configKey: string, value: string): Promise<void> {
-    await setConfigValue(configKey, value);
+    await setConfigValue(configKey, { "path": value });
 }
 
 async function setConfigValue(configKey: string, value: any): Promise<void> {
@@ -35,11 +40,11 @@ async function addValueToConfigAtScope(configKey: string, value: any, scope: vsc
     await vscode.workspace.getConfiguration().update(EXTENSION_CONFIG_KEY, newValue, scope);
 }
 
-async function addValueToConfigArray(configKey: string, value: string): Promise<void> {
+async function addValueToConfigArray(configKey: string, value: object): Promise<void> {
     await atAllConfigScopes(addValueToConfigArrayAtScope, configKey, value);
 }
 
-async function addValueToConfigArrayAtScope(configKey: string, value: string, scope: vscode.ConfigurationTarget, valueAtScope: any, createIfNotExist: boolean): Promise<void> {
+async function addValueToConfigArrayAtScope(configKey: string, value: object, scope: vscode.ConfigurationTarget, valueAtScope: any, createIfNotExist: boolean): Promise<void> {
     if (!createIfNotExist) {
         if (!valueAtScope || !(valueAtScope[configKey])) {
             return;
@@ -50,7 +55,7 @@ async function addValueToConfigArrayAtScope(configKey: string, value: string, sc
     if (valueAtScope) {
         newValue = Object.assign({}, valueAtScope);
     }
-    const arrayEntry: string[] = newValue[configKey] || [];
+    const arrayEntry: object[] = newValue[configKey] || [];
     arrayEntry.push(value);
     newValue[configKey] = arrayEntry;
     await vscode.workspace.getConfiguration().update(EXTENSION_CONFIG_KEY, newValue, scope);
@@ -67,22 +72,22 @@ async function atAllConfigScopes<T>(fn: ConfigUpdater<T>, configKey: string, val
 
 // Functions for working with the list of known kubeconfigs
 
-export function getKnownKubeconfigs(): string[] {
+export function getKnownKubeconfigs(): KubeconfigObject[] {
     const kkcConfig = vscode.workspace.getConfiguration(EXTENSION_CONFIG_KEY)[KNOWN_KUBECONFIGS_KEY];
     if (!kkcConfig || !kkcConfig.length) {
         return [];
     }
-    return kkcConfig as string[];
+    return kkcConfig as KubeconfigObject[];
 }
 
 export async function addKnownKubeconfig(kubeconfigPath: string) {
-    await addValueToConfigArray(KNOWN_KUBECONFIGS_KEY, kubeconfigPath);
+    await addValueToConfigArray(KNOWN_KUBECONFIGS_KEY, { "path": kubeconfigPath });
 }
 
 // Functions for working with the active kubeconfig setting
 
-export async function setActiveKubeconfig(kubeconfig: string): Promise<void> {
-    await addPathToConfig(KUBECONFIG_PATH_KEY, kubeconfig);
+export async function setActiveKubeconfig(kubeconfig: KubeconfigObject): Promise<void> {
+    await addPathToConfig(KUBECONFIG_PATH_KEY, kubeconfig.path);
 }
 
 export function getActiveKubeconfig(): string {

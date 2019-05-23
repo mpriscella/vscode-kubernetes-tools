@@ -190,7 +190,20 @@
                         },
                         "vs-kubernetes.knownKubeconfigs": {
                             "type": "array",
-                            "description": "File paths to kubeconfig files from which you can select."
+                            "description": "File paths to kubeconfig files from which you can select.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Description of the kubeconfig file."
+                                    },
+                                    "path": {
+                                        "type": "string",
+                                        "description": "File path to the kubeconfig file."
+                                    }
+                                }
+                            }
                         },
                         "vs-kubernetes.autoCleanupOnDebugTerminate": {
                             "type": "boolean",
