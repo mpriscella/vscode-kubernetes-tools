@@ -68,7 +68,7 @@ import { installHelm, installDraft, installKubectl, installMinikube } from './co
 import { KubernetesResourceVirtualFileSystemProvider, K8S_RESOURCE_SCHEME, kubefsUri } from './kuberesources.virtualfs';
 import { KubernetesResourceLinkProvider } from './kuberesources.linkprovider';
 import { Container, isKubernetesResource, KubernetesCollection, Pod, KubernetesResource } from './kuberesources.objectmodel';
-import { setActiveKubeconfig, getKnownKubeconfigs, addKnownKubeconfig } from './components/config/config';
+import { setActiveKubeconfig, getKnownKubeconfigs, addKnownKubeconfig, KubeconfigObject } from './components/config/config';
 import { HelmDocumentSymbolProvider } from './helm.symbolProvider';
 import { findParentYaml } from './yaml-support/yaml-navigation';
 import { linters } from './components/lint/linters';
@@ -1797,7 +1797,7 @@ async function createClusterKubernetes() {
 
 const ADD_NEW_KUBECONFIG_PICK = "+ Add new kubeconfig";
 
-async function useKubeconfigKubernetes(kubeconfig?: config.KubeconfigObject): Promise<void> {
+async function useKubeconfigKubernetes(kubeconfig?: KubeconfigObject): Promise<void> {
     const kc = await getKubeconfigSelection(kubeconfig);
     if (!kc) {
         return;
@@ -1806,7 +1806,7 @@ async function useKubeconfigKubernetes(kubeconfig?: config.KubeconfigObject): Pr
     telemetry.invalidateClusterType(undefined, kubectl);
 }
 
-async function getKubeconfigSelection(kubeconfig?: config.KubeconfigObject): Promise<config.KubeconfigObject | undefined> {
+async function getKubeconfigSelection(kubeconfig?: KubeconfigObject): Promise<KubeconfigObject | undefined> {
     if (kubeconfig) {
         return kubeconfig;
     }
