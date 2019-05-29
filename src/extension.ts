@@ -1830,17 +1830,17 @@ async function getKubeconfigSelection(kubeconfig?: KubeconfigObject): Promise<Ku
         return undefined;
     }
 
-    return knownKubeconfigs.find((kc) => {
-        if (!kc.name || !kc.name.length) {
-            return true;
+    for (var i = 0; i < knownKubeconfigs.length; i++) {
+        let kc = knownKubeconfigs[i];
+        if (kc.hasOwnProperty('name') && kc.name === pick) {
+            return kc;
         }
-        else if (!kc.path || !kc.path.length) {
-            return true;
+        else if (kc.path === pick) {
+            return kc;
         }
-        else {
-            return false;
-        }
-    });
+    }
+
+    return undefined;
 }
 
 async function useContextKubernetes(explorerNode: explorer.KubernetesObject) {

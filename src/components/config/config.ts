@@ -18,7 +18,7 @@ export interface KubeconfigObject {
 }
 
 export async function addPathToConfig(configKey: string, value: string): Promise<void> {
-    await setConfigValue(configKey, { "path": value });
+    await setConfigValue(configKey, value);
 }
 
 async function setConfigValue(configKey: string, value: any): Promise<void> {
